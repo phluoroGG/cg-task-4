@@ -173,7 +173,7 @@ class ObjReaderTest {
     public void testParseFaceOneArgument() {
         ArrayList<String> wordInLine = new ArrayList<>();
         wordInLine.add("1");
-        ArrayList<ArrayList<Integer>> polygonIndexes = ObjReader.parseFace(wordInLine, 5);
+        ArrayList<ArrayList<Integer>> polygonIndexes = ObjReader.parseFace(wordInLine, 5, 1, 0, 0, true, true);
         Integer result = polygonIndexes.get(0).get(0);
         Integer expectedResult = 0;
         Assertions.assertEquals(expectedResult, result);
@@ -182,7 +182,7 @@ class ObjReaderTest {
     public void testParseFaceOneArgumentFalse() {
         ArrayList<String> wordInLine = new ArrayList<>();
         wordInLine.add("1");
-        ArrayList<ArrayList<Integer>> polygonIndexes = ObjReader.parseFace(wordInLine, 5);
+        ArrayList<ArrayList<Integer>> polygonIndexes = ObjReader.parseFace(wordInLine, 5, 1, 0, 0, true, true);
         Integer result = polygonIndexes.get(0).get(0);
         Integer expectedResult = 1;
         Assertions.assertNotEquals(expectedResult, result);
@@ -192,7 +192,7 @@ class ObjReaderTest {
     public void testParseFaceTwoArguments() {
         ArrayList<String> wordInLine = new ArrayList<>();
         wordInLine.add("1/2");
-        ArrayList<ArrayList<Integer>> polygonIndexes = ObjReader.parseFace(wordInLine, 5);
+        ArrayList<ArrayList<Integer>> polygonIndexes = ObjReader.parseFace(wordInLine, 5, 2, 2, 0, true, true);
         Integer result1 = polygonIndexes.get(0).get(0);
         Integer expectedResult1 = 0;
         Assertions.assertEquals(expectedResult1, result1);
@@ -205,7 +205,7 @@ class ObjReaderTest {
     public void testParseFaceTwoArgumentsFalse() {
         ArrayList<String> wordInLine = new ArrayList<>();
         wordInLine.add("1/2");
-        ArrayList<ArrayList<Integer>> polygonIndexes = ObjReader.parseFace(wordInLine, 5);
+        ArrayList<ArrayList<Integer>> polygonIndexes = ObjReader.parseFace(wordInLine, 5, 2, 2, 0, true, true);
         Integer result1 = polygonIndexes.get(0).get(0);
         Integer expectedResult1 = 1;
         Assertions.assertNotEquals(expectedResult1, result1);
@@ -218,7 +218,7 @@ class ObjReaderTest {
     public void testParseFaceThreeArguments() {
         ArrayList<String> wordInLine = new ArrayList<>();
         wordInLine.add("1/2/3");
-        ArrayList<ArrayList<Integer>> polygonIndexes = ObjReader.parseFace(wordInLine, 5);
+        ArrayList<ArrayList<Integer>> polygonIndexes = ObjReader.parseFace(wordInLine, 5, 3, 3, 3, true, true);
         Integer result1 = polygonIndexes.get(0).get(0);
         Integer expectedResult1 = 0;
         Assertions.assertEquals(expectedResult1, result1);
@@ -234,7 +234,7 @@ class ObjReaderTest {
     public void testParseFaceThreeArgumentsFalse() {
         ArrayList<String> wordInLine = new ArrayList<>();
         wordInLine.add("1/2/3");
-        ArrayList<ArrayList<Integer>> polygonIndexes = ObjReader.parseFace(wordInLine, 5);
+        ArrayList<ArrayList<Integer>> polygonIndexes = ObjReader.parseFace(wordInLine, 5, 3, 3, 3, true, true);
         Integer result1 = polygonIndexes.get(0).get(0);
         Integer expectedResult1 = 1;
         Assertions.assertNotEquals(expectedResult1, result1);
@@ -251,7 +251,7 @@ class ObjReaderTest {
         ArrayList<String> wordInLine = new ArrayList<>();
         wordInLine.add("zx/яч/.-");
         try {
-            ObjReader.parseFace(wordInLine, 5);
+            ObjReader.parseFace(wordInLine, 5, 1, 1, 1, true, true);
         } catch (ObjReaderException exception) {
             String expectedError = "Error parsing OBJ file on line: 5. Failed to parse int value.";
             Assertions.assertEquals(expectedError, exception.getMessage());
@@ -263,7 +263,7 @@ class ObjReaderTest {
         ArrayList<String> wordInLine = new ArrayList<>();
         wordInLine.add("");
         try {
-            ObjReader.parseFace(wordInLine, 5);
+            ObjReader.parseFace(wordInLine, 5, 1, 1, 1, true, true);
         } catch (ObjReaderException exception) {
             String expectedError = "Error parsing OBJ file on line: 5. Invalid element size.";
             Assertions.assertEquals(expectedError, exception.getMessage());
@@ -275,7 +275,7 @@ class ObjReaderTest {
         ArrayList<String> wordInLine = new ArrayList<>();
         wordInLine.add("/");
         try {
-            ObjReader.parseFace(wordInLine, 5);
+            ObjReader.parseFace(wordInLine, 5, 1, 1, 1, true, true);
         } catch (ObjReaderException exception) {
             String expectedError = "Error parsing OBJ file on line: 5. Too few arguments.";
             Assertions.assertEquals(expectedError, exception.getMessage());
@@ -287,7 +287,7 @@ class ObjReaderTest {
         ArrayList<String> wordInLine = new ArrayList<>();
         wordInLine.add("1/2/3/4");
         try {
-            ObjReader.parseFace(wordInLine, 5);
+            ObjReader.parseFace(wordInLine, 5, 4, 4, 4, true, true);
         } catch (ObjReaderException exception) {
             String expectedError = "Error parsing OBJ file on line: 5. Invalid element size.";
             Assertions.assertEquals(expectedError, exception.getMessage());
@@ -298,12 +298,72 @@ class ObjReaderTest {
     public void testParseFaceThreeArgumentsWithoutSecond() {
         ArrayList<String> wordInLine = new ArrayList<>();
         wordInLine.add("1//3");
-        ArrayList<ArrayList<Integer>> polygonIndexes = ObjReader.parseFace(wordInLine, 5);
+        ArrayList<ArrayList<Integer>> polygonIndexes = ObjReader.parseFace(wordInLine, 5, 3, 0, 3, true, true);
         Integer result1 = polygonIndexes.get(0).get(0);
         Integer expectedResult1 = 0;
         Assertions.assertEquals(expectedResult1, result1);
         Integer result2 = polygonIndexes.get(2).get(0);
         Integer expectedResult2 = 2;
         Assertions.assertEquals(expectedResult2, result2);
+    }
+
+    @Test
+    public void testParseFaceLargeIndexVertex() {
+        ArrayList<String> wordInLine = new ArrayList<>();
+        wordInLine.add("1/2/3");
+        try {
+            ObjReader.parseFace(wordInLine, 5, 0, 1, 1, true, true);
+        } catch (ObjReaderException exception) {
+            String expectedError = "Error parsing OBJ file on line: 5. No vertex with index 1.";
+            Assertions.assertEquals(expectedError, exception.getMessage());
+        }
+    }
+
+    @Test
+    public void testParseFaceLargeIndexTextureVertex() {
+        ArrayList<String> wordInLine = new ArrayList<>();
+        wordInLine.add("1/2/3");
+        try {
+            ObjReader.parseFace(wordInLine, 5, 1, 1, 1, true, true);
+        } catch (ObjReaderException exception) {
+            String expectedError = "Error parsing OBJ file on line: 5. No texture vertex with index 2.";
+            Assertions.assertEquals(expectedError, exception.getMessage());
+        }
+    }
+
+    @Test
+    public void testParseFaceLargeIndexNormal() {
+        ArrayList<String> wordInLine = new ArrayList<>();
+        wordInLine.add("1/2/3");
+        try {
+            ObjReader.parseFace(wordInLine, 5, 1, 2, 2, true, true);
+        } catch (ObjReaderException exception) {
+            String expectedError = "Error parsing OBJ file on line: 5. No normal with index 3.";
+            Assertions.assertEquals(expectedError, exception.getMessage());
+        }
+    }
+
+    @Test
+    public void testParseFaceNoTextureVertices() {
+        ArrayList<String> wordInLine = new ArrayList<>();
+        wordInLine.add("1/2/3");
+        try {
+            ObjReader.parseFace(wordInLine, 5, 3, 3, 3, false, true);
+        } catch (ObjReaderException exception) {
+            String expectedError = "Error parsing OBJ file on line: 5. There are texture vertices, but they shouldn't be.";
+            Assertions.assertEquals(expectedError, exception.getMessage());
+        }
+    }
+
+    @Test
+    public void testParseFaceNoNormals() {
+        ArrayList<String> wordInLine = new ArrayList<>();
+        wordInLine.add("1/2/3");
+        try {
+            ObjReader.parseFace(wordInLine, 5, 3, 3, 3, true, false);
+        } catch (ObjReaderException exception) {
+            String expectedError = "Error parsing OBJ file on line: 5. There are normals, but they shouldn't be.";
+            Assertions.assertEquals(expectedError, exception.getMessage());
+        }
     }
 }

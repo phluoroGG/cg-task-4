@@ -20,6 +20,8 @@ public class ObjReader {
 
         int lineInd = 0;
         Scanner scanner = new Scanner(fileContent);
+        boolean isHaveTextureVertices = true;
+        boolean isHaveNormals = true;
         while (scanner.hasNextLine()) {
             final String line = scanner.nextLine();
             ArrayList<String> wordsInLine = new ArrayList<>(Arrays.asList(line.split("\\s+")));
@@ -35,16 +37,23 @@ public class ObjReader {
                 case OBJ_TEXTURE_TOKEN -> result.textureVertices.add(parseTextureVertex(wordsInLine, lineInd));
                 case OBJ_NORMAL_TOKEN -> result.normals.add(parseNormal(wordsInLine, lineInd));
                 case OBJ_FACE_TOKEN -> {
-                    ArrayList<ArrayList<Integer>> polygonIndexes = parseFace(wordsInLine, lineInd);
+                    ArrayList<ArrayList<Integer>> polygonIndexes = parseFace(wordsInLine, lineInd,
+                            result.vertices.size(), result.textureVertices.size(), result.normals.size(),
+                            isHaveTextureVertices, isHaveNormals);
                     result.polygonVertexIndices.add(polygonIndexes.get(0));
                     if (!polygonIndexes.get(1).isEmpty()) {
                         result.polygonTextureVertexIndices.add(polygonIndexes.get(1));
+                    } else {
+                        isHaveTextureVertices = false;
                     }
                     if (!polygonIndexes.get(2).isEmpty()) {
                         result.polygonNormalIndices.add(polygonIndexes.remove(2));
+                    } else {
+                        isHaveNormals = false;
                     }
                 }
-                default -> {}
+                default -> {
+                }
             }
         }
         return result;
@@ -57,10 +66,10 @@ public class ObjReader {
                     Float.parseFloat(wordsInLineWithoutToken.get(1)),
                     Float.parseFloat(wordsInLineWithoutToken.get(2)));
 
-        } catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             throw new ObjReaderException("Failed to parse float value.", lineInd);
 
-        } catch(IndexOutOfBoundsException e) {
+        } catch (IndexOutOfBoundsException e) {
             throw new ObjReaderException("Too few vertex arguments.", lineInd);
         }
     }
@@ -71,10 +80,10 @@ public class ObjReader {
                     Float.parseFloat(wordsInLineWithoutToken.get(0)),
                     Float.parseFloat(wordsInLineWithoutToken.get(1)));
 
-        } catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             throw new ObjReaderException("Failed to parse float value.", lineInd);
 
-        } catch(IndexOutOfBoundsException e) {
+        } catch (IndexOutOfBoundsException e) {
             throw new ObjReaderException("Too few texture vertex arguments.", lineInd);
         }
     }
@@ -86,17 +95,17 @@ public class ObjReader {
                     Float.parseFloat(wordsInLineWithoutToken.get(1)),
                     Float.parseFloat(wordsInLineWithoutToken.get(2)));
 
-        } catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             throw new ObjReaderException("Failed to parse float value.", lineInd);
 
-        } catch(IndexOutOfBoundsException e) {
+        } catch (IndexOutOfBoundsException e) {
             throw new ObjReaderException("Too few normal arguments.", lineInd);
         }
     }
 
-    protected static ArrayList<ArrayList<Integer>> parseFace(
-            ArrayList<String> wordInLine,
-            int lineInd) {
+    protected static ArrayList<ArrayList<Integer>> parseFace(final ArrayList<String> wordInLine, int lineInd,
+                                                             int vertexCount, int textureVertexCount, int normalCount,
+                                                             boolean isHaveTextureVertices, boolean isHaveNormals) {
         ArrayList<Integer> polygonVertexIndices = new ArrayList<>();
         ArrayList<Integer> polygonTextureVertexIndices = new ArrayList<>();
         ArrayList<Integer> polygonNormalIndices = new ArrayList<>();
@@ -105,6 +114,19 @@ public class ObjReader {
                 String[] wordIndices = s.split("/");
                 if (wordIndices[0].equals("")) {
                     throw new ObjReaderException("Invalid element size.", lineInd);
+                }
+                if (Integer.parseInt(wordIndices[0]) > vertexCount) {
+                    throw new ObjReaderException(
+                            String.format("No vertex with index %s.", wordIndices[0]), lineInd);
+                }
+                if (wordIndices.length > 1 && !wordIndices[1].equals("") &&
+                        Integer.parseInt(wordIndices[1]) > textureVertexCount) {
+                    throw new ObjReaderException(
+                            String.format("No texture vertex with index %s.", wordIndices[1]), lineInd);
+                }
+                if (wordIndices.length > 2 && Integer.parseInt(wordIndices[2]) > normalCount) {
+                    throw new ObjReaderException(
+                            String.format("No normal with index %s.", wordIndices[2]), lineInd);
                 }
                 switch (wordIndices.length) {
                     case 1 -> polygonVertexIndices.add(Integer.parseInt(wordIndices[0]) - 1);
@@ -121,11 +143,17 @@ public class ObjReader {
                     }
                     default -> throw new ObjReaderException("Invalid element size.", lineInd);
                 }
+                if (!isHaveTextureVertices && !polygonTextureVertexIndices.isEmpty()) {
+                    throw new ObjReaderException("There are texture vertices, but they shouldn't be.", lineInd);
+                }
+                if (!isHaveNormals && !polygonNormalIndices.isEmpty()) {
+                    throw new ObjReaderException("There are normals, but they shouldn't be.", lineInd);
+                }
 
-            } catch(NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 throw new ObjReaderException("Failed to parse int value.", lineInd);
 
-            } catch(IndexOutOfBoundsException e) {
+            } catch (IndexOutOfBoundsException e) {
                 throw new ObjReaderException("Too few arguments.", lineInd);
             }
         }
