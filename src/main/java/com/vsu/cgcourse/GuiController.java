@@ -1,6 +1,7 @@
 package com.vsu.cgcourse;
 
 import com.vsu.cgcourse.math.Vector3f;
+import com.vsu.cgcourse.obj_writer.ObjWriter;
 import javafx.fxml.FXML;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -8,13 +9,13 @@ import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.layout.AnchorPane;
-import javafx.stage.Stage;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.io.IOException;
 import java.io.File;
+import java.util.Collections;
 
 
 import com.vsu.cgcourse.model.Mesh;
@@ -35,7 +36,7 @@ public class GuiController {
     private Mesh mesh = null;
 
     private Camera camera = new Camera(
-            new Vector3f(0, 00, 100),
+            new Vector3f(0, 0, 100),
             new Vector3f(0, 0, 0),
             1.0F, 1, 0.01F, 100);
 
@@ -66,12 +67,14 @@ public class GuiController {
     }
 
     @FXML
-    private void onOpenModelMenuItemClick() {
+    private void loadModel() {
         FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.dir") +
+                "/src/main/resources/com/vsu/cgcourse/models"));
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Model (*.obj)", "*.obj"));
         fileChooser.setTitle("Load Model");
 
-        File file = fileChooser.showOpenDialog((Stage) canvas.getScene().getWindow());
+        File file = fileChooser.showOpenDialog(canvas.getScene().getWindow());
         if (file == null) {
             return;
         }
@@ -81,6 +84,27 @@ public class GuiController {
         try {
             String fileContent = Files.readString(fileName);
             mesh = ObjReader.read(fileContent);
+            // todo: обработка ошибок
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void saveModel() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.dir") +
+                "/src/main/resources/com/vsu/cgcourse/models"));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Model (*.obj)", "*.obj"));
+        fileChooser.setTitle("Save Model");
+
+        File file = fileChooser.showSaveDialog(canvas.getScene().getWindow());
+
+        Path fileName = Path.of(file.getAbsolutePath());
+
+        try {
+            String content = ObjWriter.write(mesh);
+            Files.write(fileName, Collections.singleton(content));
             // todo: обработка ошибок
         } catch (IOException exception) {
             exception.printStackTrace();

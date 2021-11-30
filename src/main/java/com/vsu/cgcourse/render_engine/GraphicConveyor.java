@@ -59,21 +59,21 @@ public class GraphicConveyor {
     public static Vector3f multiplyMatrix4ByVector3(final Matrix4f matrix, final Vector3f vertex) {
         float[] vectorArray = vertex.toArray();
         float[][] matrixArray = matrix.toMatrix();
-        final float x = (vectorArray[0] * matrixArray[0][0]) +
-                (vectorArray[1] * matrixArray[1][0]) +
-                (vectorArray[2] * matrixArray[2][0]) +
-                matrixArray[3][0];
-        final float y = (vectorArray[0] * matrixArray[0][1]) +
-                (vectorArray[1] * matrixArray[1][1]) +
-                (vectorArray[2] * matrixArray[2][1]) +
-                matrixArray[3][1];
-        final float z = (vectorArray[0] * matrixArray[0][2]) +
-                (vectorArray[1] * matrixArray[1][2]) +
-                (vectorArray[2] * matrixArray[2][2]) +
-                matrixArray[3][2];
-        final float w = (vectorArray[0] * matrixArray[0][3]) +
-                (vectorArray[1] * matrixArray[1][3]) +
-                (vectorArray[2] * matrixArray[2][3]) +
+        final float x = (matrixArray[0][0] * vectorArray[0]) +
+                (matrixArray[0][1] * vectorArray[1]) +
+                (matrixArray[0][2] * vectorArray[2]) +
+                matrixArray[0][3];
+        final float y = (matrixArray[1][0] * vectorArray[0]) +
+                (matrixArray[1][1] * vectorArray[1]) +
+                (matrixArray[1][2] * vectorArray[2]) +
+                matrixArray[1][3];
+        final float z = (matrixArray[2][0] * vectorArray[0]) +
+                (matrixArray[2][1] * vectorArray[1]) +
+                (matrixArray[2][2] * vectorArray[2]) +
+                matrixArray[2][3];
+        final float w = (matrixArray[3][0] * vectorArray[0]) +
+                (matrixArray[3][1] * vectorArray[1]) +
+                (matrixArray[3][2] * vectorArray[2]) +
                 matrixArray[3][3];
         return new Vector3f(x / w, y / w, z / w);
     }
