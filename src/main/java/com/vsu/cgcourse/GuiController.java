@@ -2,14 +2,24 @@ package com.vsu.cgcourse;
 
 import com.vsu.cgcourse.math.Vector3f;
 import com.vsu.cgcourse.obj_writer.ObjWriter;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.event.ActionEvent;
+import javafx.geometry.Orientation;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,6 +46,9 @@ public class GuiController {
     private Mesh mesh = null;
 
     private Camera camera = new Camera(
+            new Vector3f(1, 1, 1),
+            new Vector3f(0, 0, 0),
+            new Vector3f(0, 0, 0),
             new Vector3f(0, 0, 100),
             new Vector3f(0, 0, 0),
             1.0F, 1, 0.01F, 100);
@@ -112,32 +125,206 @@ public class GuiController {
     }
 
     @FXML
-    public void handleCameraForward(ActionEvent actionEvent) {
+    public void scaleModel() {
+        Label lblX = new Label("Scale X");
+
+        Slider sliderX = new Slider(0.1, 10, 1);
+        sliderX.setShowTickMarks(true);
+        sliderX.setShowTickLabels(true);
+        sliderX.setBlockIncrement(0.1);
+        sliderX.setMajorTickUnit(3);
+        sliderX.setMinorTickCount(2);
+        sliderX.setSnapToTicks(false);
+
+        sliderX.valueProperty().addListener((changed, oldValue, newValue) -> {
+            lblX.setText("Scale X: " + String.format("%.06f", newValue.floatValue()));
+            camera.setScale(new Vector3f(
+                    newValue.floatValue(), camera.getScale().vector[1], camera.getScale().vector[2]));
+        });
+
+        Label lblY = new Label("Scale Y");
+
+        Slider sliderY = new Slider(0.1, 10, 1);
+        sliderY.setShowTickMarks(true);
+        sliderY.setShowTickLabels(true);
+        sliderY.setBlockIncrement(0.1);
+        sliderY.setMajorTickUnit(3);
+        sliderY.setMinorTickCount(2);
+        sliderY.setSnapToTicks(false);
+
+        sliderY.valueProperty().addListener((changed, oldValue, newValue) -> {
+            lblY.setText("Scale Y: " + String.format("%.06f", newValue.floatValue()));
+            camera.setScale(new Vector3f(
+                    camera.getScale().vector[0], newValue.floatValue(), camera.getScale().vector[2]));
+        });
+
+        Label lblZ = new Label("Scale Z");
+
+        Slider sliderZ = new Slider(0.1, 10, 1);
+        sliderZ.setShowTickMarks(true);
+        sliderZ.setShowTickLabels(true);
+        sliderZ.setBlockIncrement(0.1);
+        sliderZ.setMajorTickUnit(3);
+        sliderZ.setMinorTickCount(2);
+        sliderZ.setSnapToTicks(false);
+
+        sliderZ.valueProperty().addListener((changed, oldValue, newValue) -> {
+            lblZ.setText("Scale Z: " + String.format("%.06f", newValue.floatValue()));
+            camera.setScale(new Vector3f(
+                    camera.getScale().vector[0], camera.getScale().vector[1], newValue.floatValue()));
+        });
+
+        FlowPane root = new FlowPane(Orientation.VERTICAL, 10, 10, lblX, sliderX, lblY, sliderY, lblZ, sliderZ);
+        Scene scene = new Scene(root, 300, 300);
+        Stage window = new Stage();
+        window.setTitle("Scale");
+        window.setScene(scene);
+        window.show();
+    }
+
+    @FXML
+    public void rotateModel() {
+        Label lblX = new Label("Rotation X");
+
+        Slider sliderX = new Slider(0, 360, 0);
+        sliderX.setShowTickMarks(true);
+        sliderX.setShowTickLabels(true);
+        sliderX.setBlockIncrement(10);
+        sliderX.setMajorTickUnit(90);
+        sliderX.setMinorTickCount(2);
+        sliderX.setSnapToTicks(false);
+
+        sliderX.valueProperty().addListener((changed, oldValue, newValue) -> {
+            lblX.setText("Rotation X: " + String.format("%d", newValue.intValue()));
+            camera.setRotation(new Vector3f((float) (newValue.floatValue() * Math.PI / 180),
+                    camera.getRotation().vector[1], camera.getRotation().vector[2]));
+        });
+
+        Label lblY = new Label("Rotation Y");
+
+        Slider sliderY = new Slider(0, 360, 0);
+        sliderY.setShowTickMarks(true);
+        sliderY.setShowTickLabels(true);
+        sliderY.setBlockIncrement(10);
+        sliderY.setMajorTickUnit(90);
+        sliderY.setMinorTickCount(2);
+        sliderY.setSnapToTicks(false);
+
+        sliderY.valueProperty().addListener((changed, oldValue, newValue) -> {
+            lblY.setText("Rotation Y: " + String.format("%d", newValue.intValue()));
+            camera.setRotation(new Vector3f(camera.getRotation().vector[0],
+                    (float) (newValue.floatValue() * Math.PI / 180), camera.getRotation().vector[2]));
+        });
+
+        Label lblZ = new Label("Rotation Z");
+
+        Slider sliderZ = new Slider(0, 360, 0);
+        sliderZ.setShowTickMarks(true);
+        sliderZ.setShowTickLabels(true);
+        sliderZ.setBlockIncrement(10);
+        sliderZ.setMajorTickUnit(90);
+        sliderZ.setMinorTickCount(2);
+        sliderZ.setSnapToTicks(false);
+
+        sliderZ.valueProperty().addListener((changed, oldValue, newValue) -> {
+            lblZ.setText("Rotation Z: " + String.format("%d", newValue.intValue()));
+            camera.setRotation(new Vector3f(camera.getRotation().vector[0],
+                    camera.getRotation().vector[1], (float) (newValue.floatValue() * Math.PI / 180)));
+        });
+
+        FlowPane root = new FlowPane(Orientation.VERTICAL, 10, 10, lblX, sliderX, lblY, sliderY, lblZ, sliderZ);
+        Scene scene = new Scene(root, 300, 300);
+        Stage window = new Stage();
+        window.setTitle("Rotation");
+        window.setScene(scene);
+        window.show();
+    }
+
+    @FXML
+    public void translateModel() {
+        Label lblX = new Label("Translation X");
+
+        Slider sliderX = new Slider(-100, 100, 0);
+        sliderX.setShowTickMarks(true);
+        sliderX.setShowTickLabels(true);
+        sliderX.setBlockIncrement(5);
+        sliderX.setMajorTickUnit(20);
+        sliderX.setMinorTickCount(1);
+        sliderX.setSnapToTicks(false);
+
+        sliderX.valueProperty().addListener((changed, oldValue, newValue) -> {
+            lblX.setText("Translation X: " + String.format("%d", newValue.intValue()));
+            camera.setTranslation(new Vector3f(newValue.floatValue(),
+                    camera.getTranslation().vector[1], camera.getTranslation().vector[2]));
+        });
+
+        Label lblY = new Label("Translation Y");
+
+        Slider sliderY = new Slider(-100, 100, 0);
+        sliderY.setShowTickMarks(true);
+        sliderY.setShowTickLabels(true);
+        sliderY.setBlockIncrement(5);
+        sliderY.setMajorTickUnit(20);
+        sliderY.setMinorTickCount(1);
+        sliderY.setSnapToTicks(false);
+
+        sliderY.valueProperty().addListener((changed, oldValue, newValue) -> {
+            lblY.setText("Translation Y: " + String.format("%d", newValue.intValue()));
+            camera.setTranslation(new Vector3f(camera.getTranslation().vector[0],
+                    newValue.floatValue(), camera.getTranslation().vector[2]));
+        });
+
+        Label lblZ = new Label("Translation Z");
+
+        Slider sliderZ = new Slider(-100, 100, 0);
+        sliderZ.setShowTickMarks(true);
+        sliderZ.setShowTickLabels(true);
+        sliderZ.setBlockIncrement(5);
+        sliderZ.setMajorTickUnit(20);
+        sliderZ.setMinorTickCount(1);
+        sliderZ.setSnapToTicks(false);
+
+        sliderZ.valueProperty().addListener((changed, oldValue, newValue) -> {
+            lblZ.setText("Translation Z: " + String.format("%d", newValue.intValue()));
+            camera.setTranslation(new Vector3f(camera.getTranslation().vector[0],
+                    camera.getTranslation().vector[1], newValue.floatValue()));
+        });
+
+        FlowPane root = new FlowPane(Orientation.VERTICAL, 10, 10, lblX, sliderX, lblY, sliderY, lblZ, sliderZ);
+        Scene scene = new Scene(root, 300, 300);
+        Stage window = new Stage();
+        window.setTitle("Translation");
+        window.setScene(scene);
+        window.show();
+    }
+
+    @FXML
+    public void handleCameraForward() {
         camera.movePosition(new Vector3f(0, 0, -TRANSLATION));
     }
 
     @FXML
-    public void handleCameraBackward(ActionEvent actionEvent) {
+    public void handleCameraBackward() {
         camera.movePosition(new Vector3f(0, 0, TRANSLATION));
     }
 
     @FXML
-    public void handleCameraLeft(ActionEvent actionEvent) {
+    public void handleCameraLeft() {
         camera.movePosition(new Vector3f(TRANSLATION, 0, 0));
     }
 
     @FXML
-    public void handleCameraRight(ActionEvent actionEvent) {
+    public void handleCameraRight() {
         camera.movePosition(new Vector3f(-TRANSLATION, 0, 0));
     }
 
     @FXML
-    public void handleCameraUp(ActionEvent actionEvent) {
+    public void handleCameraUp() {
         camera.movePosition(new Vector3f(0, TRANSLATION, 0));
     }
 
     @FXML
-    public void handleCameraDown(ActionEvent actionEvent) {
+    public void handleCameraDown() {
         camera.movePosition(new Vector3f(0, -TRANSLATION, 0));
     }
 }

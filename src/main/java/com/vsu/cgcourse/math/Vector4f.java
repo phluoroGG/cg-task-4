@@ -5,7 +5,7 @@ import static com.vsu.cgcourse.math.Constants.EPS;
 public class Vector4f {
 
     private final int length = 4;
-    private final float[] vector;
+    public final float[] vector;
 
     public Vector4f(float x, float y, float z, float w) {
         vector = new float[length];

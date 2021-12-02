@@ -7,7 +7,7 @@ import static com.vsu.cgcourse.math.Constants.EPS;
 public class Matrix4f {
 
     private static final int length = 4;
-    private final float[][] matrix;
+    public final float[][] matrix;
 
     public Matrix4f() {
         matrix = new float[length][length];

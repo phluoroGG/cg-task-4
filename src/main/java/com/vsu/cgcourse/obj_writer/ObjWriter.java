@@ -13,20 +13,24 @@ public class ObjWriter {
         StringBuilder stringBuilder = new StringBuilder();
         List<Vector3f> vertices = model.vertices;
         for (Vector3f vector3f : vertices) {
-            float[] vector = vector3f.toArray();
-            stringBuilder.append(String.format("v %f %f %f\n", vector[0], vector[1], vector[2]));
+            stringBuilder.append(String.format("v %f %f %f\n",
+                    vector3f.vector[0], vector3f.vector[1], vector3f.vector[2]));
         }
         stringBuilder.append("\n");
         List<Vector2f> textureVertices = model.textureVertices;
         for (Vector2f vector2f : textureVertices) {
-            float[] vector = vector2f.toArray();
-            stringBuilder.append(String.format("vt %f %f\n", vector[0], vector[1]));
+            stringBuilder.append(String.format("vt %f %f\n", vector2f.vector[0], vector2f.vector[1]));
         }
-        stringBuilder.append("\n");
+        if (!textureVertices.isEmpty()) {
+            stringBuilder.append("\n");
+        }
         List<Vector3f> normals = model.normals;
         for (Vector3f vector3f : normals) {
-            float[] vector = vector3f.toArray();
-            stringBuilder.append(String.format("vn %f %f %f\n", vector[0], vector[1], vector[2]));
+            stringBuilder.append(String.format("vn %f %f %f\n",
+                    vector3f.vector[0], vector3f.vector[1], vector3f.vector[2]));
+        }
+        if (!normals.isEmpty()) {
+            stringBuilder.append("\n");
         }
         List<ArrayList<Integer>> polygonVertexIndices = model.polygonVertexIndices;
         List<ArrayList<Integer>> polygonTextureVertexIndices = model.polygonTextureVertexIndices;

@@ -7,18 +7,36 @@ import com.vsu.cgcourse.math.Vector3f;
 public class Camera {
 
     public Camera(
+            final Vector3f scale,
+            final Vector3f rotation,
+            final Vector3f translation,
             final Vector3f position,
             final Vector3f target,
             final float fov,
             final float aspectRatio,
             final float nearPlane,
             final float farPlane) {
+        this.scale = scale;
+        this.rotation = rotation;
+        this.translation = translation;
         this.position = position;
         this.target = target;
         this.fov = fov;
         this.aspectRatio = aspectRatio;
         this.nearPlane = nearPlane;
         this.farPlane = farPlane;
+    }
+
+    public void setScale(Vector3f scale) {
+        this.scale = scale;
+    }
+
+    public void setRotation(Vector3f rotation) {
+        this.rotation = rotation;
+    }
+
+    public void setTranslation(Vector3f translation) {
+        this.translation = translation;
     }
 
     public void setPosition(final Vector3f position) {
@@ -31,6 +49,18 @@ public class Camera {
 
     public void setAspectRatio(final float aspectRatio) {
         this.aspectRatio = aspectRatio;
+    }
+
+    public Vector3f getScale() {
+        return scale;
+    }
+
+    public Vector3f getRotation() {
+        return rotation;
+    }
+
+    public Vector3f getTranslation() {
+        return translation;
     }
 
     public Vector3f getPosition() {
@@ -49,6 +79,10 @@ public class Camera {
         this.target.add(target);
     }
 
+    Matrix4f getModelMatrix() {
+        return GraphicConveyor.rotateScaleTranslate(scale, rotation, translation);
+    }
+
     Matrix4f getViewMatrix() {
         return GraphicConveyor.lookAt(position, target);
     }
@@ -57,6 +91,9 @@ public class Camera {
         return GraphicConveyor.perspective(fov, aspectRatio, nearPlane, farPlane);
     }
 
+    private Vector3f scale;
+    private Vector3f rotation;
+    private Vector3f translation;
     private Vector3f position;
     private Vector3f target;
     private float fov;
