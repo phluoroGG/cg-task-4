@@ -79,15 +79,15 @@ public class Camera {
         this.target.add(target);
     }
 
-    Matrix4f getModelMatrix() {
+    public Matrix4f getModelMatrix() {
         return GraphicConveyor.rotateScaleTranslate(scale, rotation, translation);
     }
 
-    Matrix4f getViewMatrix() {
+    public Matrix4f getViewMatrix() {
         return GraphicConveyor.lookAt(position, target);
     }
 
-    Matrix4f getProjectionMatrix() {
+    public Matrix4f getProjectionMatrix() {
         return GraphicConveyor.perspective(fov, aspectRatio, nearPlane, farPlane);
     }
 

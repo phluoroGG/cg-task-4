@@ -1,6 +1,7 @@
 package com.vsu.cgcourse;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
@@ -25,6 +26,7 @@ public class Simple3DViewer extends Application {
 
         stage.setTitle("Simple3DViewer");
         stage.setScene(scene);
+        stage.setOnHidden(e -> Platform.exit());
         stage.show();
     }
 

@@ -1,23 +1,21 @@
 package com.vsu.cgcourse;
 
+import com.vsu.cgcourse.math.Matrix4f;
 import com.vsu.cgcourse.math.Vector3f;
 import com.vsu.cgcourse.obj_writer.ObjWriter;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+import com.vsu.cgcourse.render_engine.GraphicConveyor;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.geometry.Orientation;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -45,7 +43,7 @@ public class GuiController {
 
     private Mesh mesh = null;
 
-    private Camera camera = new Camera(
+    private final Camera camera = new Camera(
             new Vector3f(1, 1, 1),
             new Vector3f(0, 0, 0),
             new Vector3f(0, 0, 0),
@@ -101,6 +99,10 @@ public class GuiController {
         } catch (IOException exception) {
             exception.printStackTrace();
         }
+
+        camera.setScale(new Vector3f(1, 1, 1));
+        camera.setRotation(new Vector3f(0, 0, 0));
+        camera.setTranslation(new Vector3f(0, 0, 0));
     }
 
     @FXML
@@ -117,6 +119,32 @@ public class GuiController {
 
         try {
             String content = ObjWriter.write(mesh);
+            Files.write(fileName, Collections.singleton(content));
+            // todo: обработка ошибок
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void saveModelWithChanges() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.dir") +
+                "/src/main/resources/com/vsu/cgcourse/models"));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Model (*.obj)", "*.obj"));
+        fileChooser.setTitle("Save Model");
+
+        File file = fileChooser.showSaveDialog(canvas.getScene().getWindow());
+
+        Path fileName = Path.of(file.getAbsolutePath());
+
+        Matrix4f matrix = camera.getModelMatrix();
+        Mesh meshToSave = mesh.copy();
+        for (int i = 0; i < meshToSave.vertices.size(); i++) {
+            meshToSave.vertices.set(i, GraphicConveyor.multiplyMatrix4ByVector3(matrix, meshToSave.vertices.get(i)));
+        }
+        try {
+            String content = ObjWriter.write(meshToSave);
             Files.write(fileName, Collections.singleton(content));
             // todo: обработка ошибок
         } catch (IOException exception) {

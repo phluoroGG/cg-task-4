@@ -17,4 +17,15 @@ public class Mesh {
     public ArrayList<ArrayList<Integer>> polygonVertexIndices = new ArrayList<>();
     public ArrayList<ArrayList<Integer>> polygonTextureVertexIndices = new ArrayList<>();
     public ArrayList<ArrayList<Integer>> polygonNormalIndices = new ArrayList<>();
+
+    public Mesh copy() {
+        Mesh mesh = new Mesh();
+        mesh.vertices.addAll(vertices);
+        mesh.textureVertices.addAll(textureVertices);
+        mesh.normals.addAll(normals);
+        mesh.polygonVertexIndices.addAll(polygonVertexIndices);
+        mesh.polygonTextureVertexIndices.addAll(polygonTextureVertexIndices);
+        mesh.polygonNormalIndices.addAll(polygonNormalIndices);
+        return mesh;
+    }
 }
