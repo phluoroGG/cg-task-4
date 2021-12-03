@@ -4,9 +4,9 @@ import com.vsu.cgcourse.math.Vector2f;
 import com.vsu.cgcourse.math.Vector3f;
 import com.vsu.cgcourse.model.Mesh;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Scanner;
 
 public class ObjReader {
 
@@ -15,15 +15,15 @@ public class ObjReader {
     private static final String OBJ_NORMAL_TOKEN = "vn";
     private static final String OBJ_FACE_TOKEN = "f";
 
-    public static Mesh read(String fileContent) {
+    public static Mesh read(String fileContent) throws IOException {
         Mesh result = new Mesh();
 
         int lineInd = 0;
-        Scanner scanner = new Scanner(fileContent);
+        BufferedReader reader = new BufferedReader(new StringReader(fileContent));
         boolean isHaveTextureVertices = true;
         boolean isHaveNormals = true;
-        while (scanner.hasNextLine()) {
-            final String line = scanner.nextLine();
+        String line = reader.readLine();
+        while (line != null) {
             ArrayList<String> wordsInLine = new ArrayList<>(Arrays.asList(line.split("\\s+")));
             if (wordsInLine.isEmpty())
                 continue;
@@ -55,6 +55,7 @@ public class ObjReader {
                 default -> {
                 }
             }
+            line = reader.readLine();
         }
         return result;
     }

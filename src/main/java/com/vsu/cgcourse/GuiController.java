@@ -4,7 +4,6 @@ import com.vsu.cgcourse.math.Matrix4f;
 import com.vsu.cgcourse.math.Vector3f;
 import com.vsu.cgcourse.obj_writer.ObjWriter;
 import com.vsu.cgcourse.render_engine.GraphicConveyor;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -78,7 +77,7 @@ public class GuiController {
     }
 
     @FXML
-    private void loadModel() {
+    private void loadModel() throws IOException {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(new File(System.getProperty("user.dir") +
                 "/src/main/resources/com/vsu/cgcourse/models"));
@@ -92,13 +91,8 @@ public class GuiController {
 
         Path fileName = Path.of(file.getAbsolutePath());
 
-        try {
-            String fileContent = Files.readString(fileName);
-            mesh = ObjReader.read(fileContent);
-            // todo: обработка ошибок
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }
+        String fileContent = Files.readString(fileName);
+        mesh = ObjReader.read(fileContent);
 
         camera.setScale(new Vector3f(1, 1, 1));
         camera.setRotation(new Vector3f(0, 0, 0));
@@ -106,7 +100,7 @@ public class GuiController {
     }
 
     @FXML
-    private void saveModel() {
+    private void saveModel() throws IOException {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(new File(System.getProperty("user.dir") +
                 "/src/main/resources/com/vsu/cgcourse/models"));
@@ -117,17 +111,12 @@ public class GuiController {
 
         Path fileName = Path.of(file.getAbsolutePath());
 
-        try {
-            String content = ObjWriter.write(mesh);
-            Files.write(fileName, Collections.singleton(content));
-            // todo: обработка ошибок
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }
+        String content = ObjWriter.write(mesh);
+        Files.write(fileName, Collections.singleton(content));
     }
 
     @FXML
-    private void saveModelWithChanges() {
+    private void saveModelWithChanges() throws IOException {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(new File(System.getProperty("user.dir") +
                 "/src/main/resources/com/vsu/cgcourse/models"));
@@ -143,13 +132,9 @@ public class GuiController {
         for (int i = 0; i < meshToSave.vertices.size(); i++) {
             meshToSave.vertices.set(i, GraphicConveyor.multiplyMatrix4ByVector3(matrix, meshToSave.vertices.get(i)));
         }
-        try {
-            String content = ObjWriter.write(meshToSave);
-            Files.write(fileName, Collections.singleton(content));
-            // todo: обработка ошибок
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }
+
+        String content = ObjWriter.write(meshToSave);
+        Files.write(fileName, Collections.singleton(content));
     }
 
     @FXML
