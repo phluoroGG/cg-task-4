@@ -4,7 +4,6 @@ import com.vsu.cgcourse.math.Matrix4f;
 import com.vsu.cgcourse.math.Vector3f;
 import com.vsu.cgcourse.obj_writer.ObjWriter;
 import com.vsu.cgcourse.render_engine.GraphicConveyor;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -13,6 +12,7 @@ import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
@@ -385,15 +385,23 @@ public class GuiController {
                 if (checkBox.isSelected()) {
                     selectedMeshes.add(mesh);
                 } else {
-                    selectedMeshes.add(mesh);
+                    selectedMeshes.remove(mesh);
                 }
             });
             checkBoxes.add(checkBox);
         }
-
+        Button button = new Button("Delete");
+        button.setOnAction(event -> {
+            for (Mesh mesh : selectedMeshes) {
+                meshes.remove(mesh);
+            }
+            selectedMeshes.clear();
+            button.getScene().getWindow().hide();
+        });
 
         FlowPane root = new FlowPane(Orientation.VERTICAL, 10, 10);
         root.getChildren().addAll(checkBoxes);
+        root.getChildren().add(button);
         Scene scene = new Scene(root, 250, 500);
         Stage window = new Stage();
         window.setTitle("Model Selection");

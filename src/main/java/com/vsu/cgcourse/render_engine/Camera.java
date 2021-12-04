@@ -75,8 +75,6 @@ public class Camera {
         return radius;
     }
 
-    boolean isBack = false;
-
     public float findZ(float x, float y) {
         x = position.vector[0] + x;
         y = position.vector[1] + y;
