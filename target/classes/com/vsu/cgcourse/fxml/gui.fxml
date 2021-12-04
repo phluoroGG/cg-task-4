@@ -73,22 +73,22 @@
         <Menu mnemonicParsing="false" text="Model Settings">
             <MenuItem mnemonicParsing="false" onAction="#selectModel" text="Model Selection">
                 <accelerator>
-                    <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="L"/>
+                    <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="DIGIT1"/>
                 </accelerator>
             </MenuItem>
             <MenuItem mnemonicParsing="false" onAction="#scaleModel" text="Scale">
                 <accelerator>
-                    <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="DIGIT1"/>
+                    <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="DIGIT2"/>
                 </accelerator>
             </MenuItem>
             <MenuItem mnemonicParsing="false" onAction="#rotateModel" text="Rotate">
                 <accelerator>
-                    <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="DIGIT2"/>
+                    <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="DIGIT3"/>
                 </accelerator>
             </MenuItem>
             <MenuItem mnemonicParsing="false" onAction="#translateModel" text="Translate">
                 <accelerator>
-                    <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="DIGIT3"/>
+                    <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="DIGIT4"/>
                 </accelerator>
             </MenuItem>
         </Menu>

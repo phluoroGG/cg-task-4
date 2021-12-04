@@ -80,26 +80,6 @@ public class GraphicConveyor {
         return new Matrix4f(result);
     }
 
-    public static Vector3f multiplyMatrix4ByVector3(final Matrix4f matrix, final Vector3f vertex) {
-        final float x = (matrix.matrix[0][0] * vertex.vector[0]) +
-                (matrix.matrix[0][1] * vertex.vector[1]) +
-                (matrix.matrix[0][2] * vertex.vector[2]) +
-                matrix.matrix[0][3];
-        final float y = (matrix.matrix[1][0] * vertex.vector[0]) +
-                (matrix.matrix[1][1] * vertex.vector[1]) +
-                (matrix.matrix[1][2] * vertex.vector[2]) +
-                matrix.matrix[1][3];
-        final float z = (matrix.matrix[2][0] * vertex.vector[0]) +
-                (matrix.matrix[2][1] * vertex.vector[1]) +
-                (matrix.matrix[2][2] * vertex.vector[2]) +
-                matrix.matrix[2][3];
-        final float w = (matrix.matrix[3][0] * vertex.vector[0]) +
-                (matrix.matrix[3][1] * vertex.vector[1]) +
-                (matrix.matrix[3][2] * vertex.vector[2]) +
-                matrix.matrix[3][3];
-        return new Vector3f(x / w, y / w, z / w);
-    }
-
     public static Vector2f vertexToPoint(final Vector3f vertex, final int width, final int height) {
         return new Vector2f(vertex.vector[0] * width + width / 2.0F, -vertex.vector[1] * height + height / 2.0F);
     }

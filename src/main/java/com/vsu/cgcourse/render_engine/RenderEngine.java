@@ -30,7 +30,7 @@ public class RenderEngine {
             ArrayList<Vector2f> resultPoints = new ArrayList<>();
             for (int vertexInPolygonInd = 0; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
                 Vector3f vertex = mesh.vertices.get(mesh.polygonVertexIndices.get(polygonInd).get(vertexInPolygonInd));
-                Vector2f resultPoint = vertexToPoint(multiplyMatrix4ByVector3(modelViewProjectionMatrix, vertex), width, height);
+                Vector2f resultPoint = vertexToPoint(modelViewProjectionMatrix.multiplyMatrix4ByVector3(vertex), width, height);
                 resultPoints.add(resultPoint);
             }
 

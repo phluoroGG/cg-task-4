@@ -173,7 +173,7 @@ public class GuiController {
         Mesh mesh = selectedMeshes.get(0).copy();
         Matrix4f matrix = mesh.getModelMatrix();
         for (int i = 0; i < mesh.vertices.size(); i++) {
-            mesh.vertices.set(i, GraphicConveyor.multiplyMatrix4ByVector3(matrix, mesh.vertices.get(i)));
+            mesh.vertices.set(i, matrix.multiplyMatrix4ByVector3(mesh.vertices.get(i)));
         }
 
         String content = ObjWriter.write(mesh);

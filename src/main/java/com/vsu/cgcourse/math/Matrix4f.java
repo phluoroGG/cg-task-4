@@ -109,6 +109,26 @@ public class Matrix4f {
         }
     }
 
+    public Vector3f multiplyMatrix4ByVector3(final Vector3f vertex) {
+        final float x = (matrix[0][0] * vertex.vector[0]) +
+                (matrix[0][1] * vertex.vector[1]) +
+                (matrix[0][2] * vertex.vector[2]) +
+                matrix[0][3];
+        final float y = (matrix[1][0] * vertex.vector[0]) +
+                (matrix[1][1] * vertex.vector[1]) +
+                (matrix[1][2] * vertex.vector[2]) +
+                matrix[1][3];
+        final float z = (matrix[2][0] * vertex.vector[0]) +
+                (matrix[2][1] * vertex.vector[1]) +
+                (matrix[2][2] * vertex.vector[2]) +
+                matrix[2][3];
+        final float w = (matrix[3][0] * vertex.vector[0]) +
+                (matrix[3][1] * vertex.vector[1]) +
+                (matrix[3][2] * vertex.vector[2]) +
+                matrix[3][3];
+        return new Vector3f(x / w, y / w, z / w);
+    }
+
     public void divide(float k) {
         assert (k != 0);
         for (int row = 0; row < matrix.length; row++) {
