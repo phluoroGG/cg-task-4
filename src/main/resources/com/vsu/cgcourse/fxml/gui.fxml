@@ -9,6 +9,18 @@
 
 <AnchorPane fx:id="anchorPane" xmlns:fx="http://javafx.com/fxml" fx:controller="com.vsu.cgcourse.GuiController">
     <MenuBar>
+        <Menu mnemonicParsing="false" text="Style">
+            <MenuItem mnemonicParsing="false" onAction="#setStyleWhite" text="White">
+                <accelerator>
+                    <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="NUMPAD1"/>
+                </accelerator>
+            </MenuItem>
+            <MenuItem mnemonicParsing="false" onAction="#setStyleGrey" text="Grey">
+                <accelerator>
+                    <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="NUMPAD0"/>
+                </accelerator>
+            </MenuItem>
+        </Menu>
         <Menu mnemonicParsing="false" text="File">
             <MenuItem mnemonicParsing="false" onAction="#loadModel" text="Load Model">
             <accelerator>
@@ -59,6 +71,11 @@
             </MenuItem>
         </Menu>
         <Menu mnemonicParsing="false" text="Model Settings">
+            <MenuItem mnemonicParsing="false" onAction="#selectModel" text="Model Selection">
+                <accelerator>
+                    <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="L"/>
+                </accelerator>
+            </MenuItem>
             <MenuItem mnemonicParsing="false" onAction="#scaleModel" text="Scale">
                 <accelerator>
                     <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="DIGIT1"/>

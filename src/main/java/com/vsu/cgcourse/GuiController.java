@@ -4,6 +4,7 @@ import com.vsu.cgcourse.math.Matrix4f;
 import com.vsu.cgcourse.math.Vector3f;
 import com.vsu.cgcourse.obj_writer.ObjWriter;
 import com.vsu.cgcourse.render_engine.GraphicConveyor;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -11,8 +12,11 @@ import javafx.animation.Timeline;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.FileChooser;
@@ -22,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.io.IOException;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 
 
@@ -40,12 +45,10 @@ public class GuiController {
     @FXML
     private Canvas canvas;
 
-    private Mesh mesh = null;
+    private final ArrayList<Mesh> meshes = new ArrayList<>();
+    private final ArrayList<Mesh> selectedMeshes = new ArrayList<>();
 
     private final Camera camera = new Camera(
-            new Vector3f(1, 1, 1),
-            new Vector3f(0, 0, 0),
-            new Vector3f(0, 0, 0),
             new Vector3f(0, 0, 100),
             new Vector3f(0, 0, 0),
             1.0F, 1, 0.01F, 100);
@@ -67,13 +70,25 @@ public class GuiController {
             canvas.getGraphicsContext2D().clearRect(0, 0, width, height);
             camera.setAspectRatio((float) (width / height));
 
-            if (mesh != null) {
-                RenderEngine.render(canvas.getGraphicsContext2D(), camera, mesh, (int) width, (int) height);
+            for (Mesh mesh : meshes) {
+                if (mesh != null) {
+                    RenderEngine.render(canvas.getGraphicsContext2D(), camera, mesh, (int) width, (int) height);
+                }
             }
         });
 
         timeline.getKeyFrames().add(frame);
         timeline.play();
+    }
+
+    @FXML
+    private void setStyleWhite() {
+        anchorPane.setStyle("-fx-background-color: #f4f4f4");
+    }
+
+    @FXML
+    private void setStyleGrey() {
+        anchorPane.setStyle("-fx-background-color: #2b2b2b");
     }
 
     @FXML
@@ -92,11 +107,7 @@ public class GuiController {
         Path fileName = Path.of(file.getAbsolutePath());
 
         String fileContent = Files.readString(fileName);
-        mesh = ObjReader.read(fileContent);
-
-        camera.setScale(new Vector3f(1, 1, 1));
-        camera.setRotation(new Vector3f(0, 0, 0));
-        camera.setTranslation(new Vector3f(0, 0, 0));
+        meshes.add(ObjReader.read(fileContent));
     }
 
     @FXML
@@ -111,7 +122,7 @@ public class GuiController {
 
         Path fileName = Path.of(file.getAbsolutePath());
 
-        String content = ObjWriter.write(mesh);
+        String content = ObjWriter.write(selectedMeshes.get(0));
         Files.write(fileName, Collections.singleton(content));
     }
 
@@ -127,18 +138,19 @@ public class GuiController {
 
         Path fileName = Path.of(file.getAbsolutePath());
 
-        Matrix4f matrix = camera.getModelMatrix();
-        Mesh meshToSave = mesh.copy();
-        for (int i = 0; i < meshToSave.vertices.size(); i++) {
-            meshToSave.vertices.set(i, GraphicConveyor.multiplyMatrix4ByVector3(matrix, meshToSave.vertices.get(i)));
+
+        Mesh mesh = selectedMeshes.get(0).copy();
+        Matrix4f matrix = mesh.getModelMatrix();
+        for (int i = 0; i < mesh.vertices.size(); i++) {
+            mesh.vertices.set(i, GraphicConveyor.multiplyMatrix4ByVector3(matrix, mesh.vertices.get(i)));
         }
 
-        String content = ObjWriter.write(meshToSave);
+        String content = ObjWriter.write(mesh);
         Files.write(fileName, Collections.singleton(content));
     }
 
     @FXML
-    public void scaleModel() {
+    private void scaleModel() {
         Label lblX = new Label("Scale X");
 
         Slider sliderX = new Slider(0.1, 10, 1);
@@ -151,8 +163,10 @@ public class GuiController {
 
         sliderX.valueProperty().addListener((changed, oldValue, newValue) -> {
             lblX.setText("Scale X: " + String.format("%.06f", newValue.floatValue()));
-            camera.setScale(new Vector3f(
-                    newValue.floatValue(), camera.getScale().vector[1], camera.getScale().vector[2]));
+            for (Mesh mesh : selectedMeshes) {
+                mesh.setScale(new Vector3f(
+                        newValue.floatValue(), mesh.getScale().vector[1], mesh.getScale().vector[2]));
+            }
         });
 
         Label lblY = new Label("Scale Y");
@@ -167,8 +181,10 @@ public class GuiController {
 
         sliderY.valueProperty().addListener((changed, oldValue, newValue) -> {
             lblY.setText("Scale Y: " + String.format("%.06f", newValue.floatValue()));
-            camera.setScale(new Vector3f(
-                    camera.getScale().vector[0], newValue.floatValue(), camera.getScale().vector[2]));
+            for (Mesh mesh : selectedMeshes) {
+                mesh.setScale(new Vector3f(
+                        mesh.getScale().vector[0], newValue.floatValue(), mesh.getScale().vector[2]));
+            }
         });
 
         Label lblZ = new Label("Scale Z");
@@ -183,8 +199,10 @@ public class GuiController {
 
         sliderZ.valueProperty().addListener((changed, oldValue, newValue) -> {
             lblZ.setText("Scale Z: " + String.format("%.06f", newValue.floatValue()));
-            camera.setScale(new Vector3f(
-                    camera.getScale().vector[0], camera.getScale().vector[1], newValue.floatValue()));
+            for (Mesh mesh : selectedMeshes) {
+                mesh.setScale(new Vector3f(
+                        mesh.getScale().vector[0], mesh.getScale().vector[1], newValue.floatValue()));
+            }
         });
 
         FlowPane root = new FlowPane(Orientation.VERTICAL, 10, 10, lblX, sliderX, lblY, sliderY, lblZ, sliderZ);
@@ -196,7 +214,7 @@ public class GuiController {
     }
 
     @FXML
-    public void rotateModel() {
+    private void rotateModel() {
         Label lblX = new Label("Rotation X");
 
         Slider sliderX = new Slider(0, 360, 0);
@@ -209,8 +227,10 @@ public class GuiController {
 
         sliderX.valueProperty().addListener((changed, oldValue, newValue) -> {
             lblX.setText("Rotation X: " + String.format("%d", newValue.intValue()));
-            camera.setRotation(new Vector3f((float) (newValue.floatValue() * Math.PI / 180),
-                    camera.getRotation().vector[1], camera.getRotation().vector[2]));
+            for (Mesh mesh : selectedMeshes) {
+                mesh.setRotation(new Vector3f((float) (newValue.floatValue() * Math.PI / 180),
+                        mesh.getRotation().vector[1], mesh.getRotation().vector[2]));
+            }
         });
 
         Label lblY = new Label("Rotation Y");
@@ -225,8 +245,10 @@ public class GuiController {
 
         sliderY.valueProperty().addListener((changed, oldValue, newValue) -> {
             lblY.setText("Rotation Y: " + String.format("%d", newValue.intValue()));
-            camera.setRotation(new Vector3f(camera.getRotation().vector[0],
-                    (float) (newValue.floatValue() * Math.PI / 180), camera.getRotation().vector[2]));
+            for (Mesh mesh : selectedMeshes) {
+                mesh.setRotation(new Vector3f(mesh.getRotation().vector[0],
+                        (float) (newValue.floatValue() * Math.PI / 180), mesh.getRotation().vector[2]));
+            }
         });
 
         Label lblZ = new Label("Rotation Z");
@@ -241,8 +263,10 @@ public class GuiController {
 
         sliderZ.valueProperty().addListener((changed, oldValue, newValue) -> {
             lblZ.setText("Rotation Z: " + String.format("%d", newValue.intValue()));
-            camera.setRotation(new Vector3f(camera.getRotation().vector[0],
-                    camera.getRotation().vector[1], (float) (newValue.floatValue() * Math.PI / 180)));
+            for (Mesh mesh : selectedMeshes) {
+                mesh.setRotation(new Vector3f(mesh.getRotation().vector[0],
+                        mesh.getRotation().vector[1], (float) (newValue.floatValue() * Math.PI / 180)));
+            }
         });
 
         FlowPane root = new FlowPane(Orientation.VERTICAL, 10, 10, lblX, sliderX, lblY, sliderY, lblZ, sliderZ);
@@ -254,7 +278,7 @@ public class GuiController {
     }
 
     @FXML
-    public void translateModel() {
+    private void translateModel() {
         Label lblX = new Label("Translation X");
 
         Slider sliderX = new Slider(-100, 100, 0);
@@ -267,8 +291,10 @@ public class GuiController {
 
         sliderX.valueProperty().addListener((changed, oldValue, newValue) -> {
             lblX.setText("Translation X: " + String.format("%d", newValue.intValue()));
-            camera.setTranslation(new Vector3f(newValue.floatValue(),
-                    camera.getTranslation().vector[1], camera.getTranslation().vector[2]));
+            for (Mesh mesh : selectedMeshes) {
+                mesh.setTranslation(new Vector3f(newValue.floatValue(),
+                        mesh.getTranslation().vector[1], mesh.getTranslation().vector[2]));
+            }
         });
 
         Label lblY = new Label("Translation Y");
@@ -283,8 +309,10 @@ public class GuiController {
 
         sliderY.valueProperty().addListener((changed, oldValue, newValue) -> {
             lblY.setText("Translation Y: " + String.format("%d", newValue.intValue()));
-            camera.setTranslation(new Vector3f(camera.getTranslation().vector[0],
-                    newValue.floatValue(), camera.getTranslation().vector[2]));
+            for (Mesh mesh : selectedMeshes) {
+                mesh.setTranslation(new Vector3f(mesh.getTranslation().vector[0],
+                        newValue.floatValue(), mesh.getTranslation().vector[2]));
+            }
         });
 
         Label lblZ = new Label("Translation Z");
@@ -299,14 +327,45 @@ public class GuiController {
 
         sliderZ.valueProperty().addListener((changed, oldValue, newValue) -> {
             lblZ.setText("Translation Z: " + String.format("%d", newValue.intValue()));
-            camera.setTranslation(new Vector3f(camera.getTranslation().vector[0],
-                    camera.getTranslation().vector[1], newValue.floatValue()));
+            for (Mesh mesh : selectedMeshes) {
+                mesh.setTranslation(new Vector3f(mesh.getTranslation().vector[0],
+                        mesh.getTranslation().vector[1], newValue.floatValue()));
+            }
         });
 
         FlowPane root = new FlowPane(Orientation.VERTICAL, 10, 10, lblX, sliderX, lblY, sliderY, lblZ, sliderZ);
         Scene scene = new Scene(root, 300, 300);
         Stage window = new Stage();
         window.setTitle("Translation");
+        window.setScene(scene);
+        window.show();
+    }
+
+    @FXML
+    private void selectModel() {
+        ArrayList<CheckBox> checkBoxes = new ArrayList<>();
+        for (Mesh mesh : meshes) {
+            CheckBox checkBox = new CheckBox(mesh.getName());
+            if (selectedMeshes.contains(mesh)) {
+                checkBox.setSelected(true);
+            }
+            checkBox.setAllowIndeterminate(false);
+            checkBox.setOnAction(event -> {
+                if (checkBox.isSelected()) {
+                    selectedMeshes.add(mesh);
+                } else {
+                    selectedMeshes.add(mesh);
+                }
+            });
+            checkBoxes.add(checkBox);
+        }
+
+
+        FlowPane root = new FlowPane(Orientation.VERTICAL, 10, 10);
+        root.getChildren().addAll(checkBoxes);
+        Scene scene = new Scene(root, 250, 500);
+        Stage window = new Stage();
+        window.setTitle("Model Selection");
         window.setScene(scene);
         window.show();
     }

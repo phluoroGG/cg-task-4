@@ -15,7 +15,7 @@ public class RenderEngine {
             final int width,
             final int height)
     {
-        final Matrix4f modelMatrix = camera.getModelMatrix();
+        final Matrix4f modelMatrix = mesh.getModelMatrix();
         final Matrix4f viewMatrix = camera.getViewMatrix();
         final Matrix4f projectionMatrix = camera.getProjectionMatrix();
 
