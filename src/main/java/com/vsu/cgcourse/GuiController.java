@@ -12,13 +12,14 @@ import javafx.animation.Timeline;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -37,7 +38,8 @@ import com.vsu.cgcourse.render_engine.RenderEngine;
 
 public class GuiController {
 
-    final private float TRANSLATION = 0.5F;
+    final private float TRANSLATION = 5F;
+    final private float SCALE = 1.5F;
 
     @FXML
     AnchorPane anchorPane;
@@ -48,6 +50,8 @@ public class GuiController {
     private final ArrayList<Mesh> meshes = new ArrayList<>();
     private final ArrayList<Mesh> selectedMeshes = new ArrayList<>();
 
+    private boolean isWhite = true;
+
     private final Camera camera = new Camera(
             new Vector3f(0, 0, 100),
             new Vector3f(0, 0, 0),
@@ -57,6 +61,24 @@ public class GuiController {
 
     @FXML
     private void initialize() {
+        anchorPane.setOnScroll(scrollEvent -> {
+            if (scrollEvent.getDeltaY() > 0) {
+                camera.setPosition(new Vector3f(camera.getPosition().vector[0] / SCALE,
+                        camera.getPosition().vector[1] / SCALE, camera.getPosition().vector[2] / SCALE));
+            } else {
+                camera.setPosition(new Vector3f(camera.getPosition().vector[0] * SCALE,
+                        camera.getPosition().vector[1] * SCALE, camera.getPosition().vector[2] * SCALE));
+            }
+        });
+        anchorPane.addEventHandler(MouseEvent.MOUSE_PRESSED, mouseEvent -> {
+            double x = mouseEvent.getSceneX();
+            double y = mouseEvent.getSceneY();
+            anchorPane.addEventHandler(MouseEvent.MOUSE_DRAGGED, mouseEvent1 ->
+                    camera.movePosition(new Vector3f((float) (mouseEvent1.getSceneX() - x) / 100,
+                            (float) (mouseEvent1.getSceneY() - y) / 100,
+                            camera.findZ((float) ((mouseEvent1.getSceneX() - x) / 100),
+                                    (float) ((mouseEvent1.getSceneY() - y) / 100)))));
+        });
         anchorPane.prefWidthProperty().addListener((ov, oldValue, newValue) -> canvas.setWidth(newValue.doubleValue()));
         anchorPane.prefHeightProperty().addListener((ov, oldValue, newValue) -> canvas.setHeight(newValue.doubleValue()));
 
@@ -70,9 +92,16 @@ public class GuiController {
             canvas.getGraphicsContext2D().clearRect(0, 0, width, height);
             camera.setAspectRatio((float) (width / height));
 
+            GraphicsContext gc = canvas.getGraphicsContext2D();
+            if (isWhite) {
+                gc.setStroke(Color.BLACK);
+            } else {
+                gc.setStroke(Color.WHITE);
+            }
+
             for (Mesh mesh : meshes) {
                 if (mesh != null) {
-                    RenderEngine.render(canvas.getGraphicsContext2D(), camera, mesh, (int) width, (int) height);
+                    RenderEngine.render(gc, camera, mesh, (int) width, (int) height);
                 }
             }
         });
@@ -84,11 +113,13 @@ public class GuiController {
     @FXML
     private void setStyleWhite() {
         anchorPane.setStyle("-fx-background-color: #f4f4f4");
+        isWhite = true;
     }
 
     @FXML
     private void setStyleGrey() {
         anchorPane.setStyle("-fx-background-color: #2b2b2b");
+        isWhite = false;
     }
 
     @FXML
