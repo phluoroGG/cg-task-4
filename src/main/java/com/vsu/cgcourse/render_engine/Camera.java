@@ -13,6 +13,7 @@ public class Camera {
     private float nearPlane;
     private float farPlane;
     private float radius;
+    public boolean isBack = false;
 
     public Camera(
             final Vector3f position,
@@ -27,7 +28,10 @@ public class Camera {
         this.aspectRatio = aspectRatio;
         this.nearPlane = nearPlane;
         this.farPlane = farPlane;
-        radius = position.length();
+        radius = new Vector3f(
+                position.vector[0] - target.vector[0],
+                position.vector[1] - target.vector[1],
+                position.vector[2] - target.vector[2]).length();
     }
 
 
@@ -55,12 +59,16 @@ public class Camera {
     }
 
     public void movePosition(final Vector3f translation) {
-        this.position.add(translation);
+        if (isBack) {
+            this.position.minus(translation);
+        } else {
+            this.position.add(translation);
+        }
         radius = position.length();
     }
 
     public void moveTarget(final Vector3f translation) {
-        this.target.add(target);
+        this.target.add(translation);
     }
 
     public Matrix4f getViewMatrix() {
@@ -75,11 +83,31 @@ public class Camera {
         return radius;
     }
 
+    public Vector3f getAngles() {
+        Vector3f vector2 = position.copy();
+        Vector3f vector1 = target.copy();
+        vector1.minus(vector2);
+        vector1.normalize();
+        vector1.vector[0] = (float) Math.asin(vector1.vector[0]);
+        vector1.vector[2] = (float) Math.asin(vector1.vector[2]);
+        return vector1;
+    }
+
     public float findZ(float x, float y) {
-        x = position.vector[0] + x;
-        y = position.vector[1] + y;
+        if (isBack) {
+            x = position.vector[0] - x;
+            y = position.vector[1] - y;
+        } else {
+            x = position.vector[0] + x;
+            y = position.vector[1] + y;
+        }
         if (x * x + y * y > radius * radius) {
-            return -1;
+            x = 2 * position.vector[0] - x;
+            y = 2 * position.vector[1] - y;
+            isBack = !isBack;
+        }
+        if (isBack) {
+            return (float) Math.sqrt(radius * radius - x * x - y * y) + position.vector[2];
         }
         return (float) Math.sqrt(radius * radius - x * x - y * y) - position.vector[2];
     }

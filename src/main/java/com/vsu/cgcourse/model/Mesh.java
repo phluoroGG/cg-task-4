@@ -5,6 +5,7 @@ import com.vsu.cgcourse.math.Vector2f;
 import com.vsu.cgcourse.math.Vector3f;
 import com.vsu.cgcourse.render_engine.GraphicConveyor;
 
+import java.nio.file.Path;
 import java.util.*;
 
 
@@ -28,6 +29,8 @@ public class Mesh {
     public ArrayList<ArrayList<Integer>> polygonTextureVertexIndices = new ArrayList<>();
     public ArrayList<ArrayList<Integer>> polygonNormalIndices = new ArrayList<>();
 
+    public Path textureFile;
+
     public Mesh copy() {
         Mesh mesh = new Mesh();
         mesh.vertices.addAll(vertices);
@@ -36,6 +39,7 @@ public class Mesh {
         mesh.polygonVertexIndices.addAll(polygonVertexIndices);
         mesh.polygonTextureVertexIndices.addAll(polygonTextureVertexIndices);
         mesh.polygonNormalIndices.addAll(polygonNormalIndices);
+        mesh.textureFile = textureFile;
         return mesh;
     }
 
@@ -74,5 +78,50 @@ public class Mesh {
 
     public Matrix4f getModelMatrix() {
         return GraphicConveyor.rotateScaleTranslate(scale, rotation, translation);
+    }
+
+    public void triangulate() {
+        for (int i = 0; i < polygonVertexIndices.size(); i++) {
+            ArrayList<Integer> vertices = polygonVertexIndices.get(i);
+            if (vertices.size() > 3) {
+                for (int j = 2; j < vertices.size(); j++) {
+                    ArrayList<Integer> newPolygon = new ArrayList<>();
+                    newPolygon.add(vertices.get(0));
+                    newPolygon.add(vertices.get(j - 1));
+                    newPolygon.add(vertices.get(j));
+                    polygonVertexIndices.add(newPolygon);
+                }
+                polygonVertexIndices.remove(vertices);
+                i--;
+            }
+        }
+        for (int i = 0; i < polygonTextureVertexIndices.size(); i++) {
+            ArrayList<Integer> textureVertices = polygonTextureVertexIndices.get(i);
+            if (textureVertices.size() > 3) {
+                for (int j = 2; j < textureVertices.size(); j++) {
+                    ArrayList<Integer> newPolygon = new ArrayList<>();
+                    newPolygon.add(textureVertices.get(0));
+                    newPolygon.add(textureVertices.get(j - 1));
+                    newPolygon.add(textureVertices.get(j));
+                    polygonTextureVertexIndices.add(newPolygon);
+                }
+                polygonTextureVertexIndices.remove(textureVertices);
+                i--;
+            }
+        }
+        for (int i = 0; i < polygonNormalIndices.size(); i++) {
+            ArrayList<Integer> normals = polygonNormalIndices.get(i);
+            if (normals.size() > 3) {
+                for (int j = 2; j < normals.size(); j++) {
+                    ArrayList<Integer> newPolygon = new ArrayList<>();
+                    newPolygon.add(normals.get(0));
+                    newPolygon.add(normals.get(j - 1));
+                    newPolygon.add(normals.get(j));
+                    polygonNormalIndices.add(newPolygon);
+                }
+                polygonNormalIndices.remove(normals);
+                i--;
+            }
+        }
     }
 }

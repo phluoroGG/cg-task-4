@@ -3,7 +3,6 @@ package com.vsu.cgcourse;
 import com.vsu.cgcourse.math.Matrix4f;
 import com.vsu.cgcourse.math.Vector3f;
 import com.vsu.cgcourse.obj_writer.ObjWriter;
-import com.vsu.cgcourse.render_engine.GraphicConveyor;
 import javafx.fxml.FXML;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -29,6 +28,7 @@ import java.io.IOException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 import com.vsu.cgcourse.model.Mesh;
@@ -50,6 +50,9 @@ public class GuiController {
     private final ArrayList<Mesh> meshes = new ArrayList<>();
     private final ArrayList<Mesh> selectedMeshes = new ArrayList<>();
 
+    boolean drawLines = true;
+    boolean drawPolygons = false;
+
     private boolean isWhite = true;
 
     private final Camera camera = new Camera(
@@ -70,14 +73,38 @@ public class GuiController {
                         camera.getPosition().vector[1] * SCALE, camera.getPosition().vector[2] * SCALE));
             }
         });
+        AtomicReference<Double> xRotate = new AtomicReference<>((double) 0);
+        AtomicReference<Double> yRotate = new AtomicReference<>((double) 0);
+        AtomicReference<Double> xTranslate = new AtomicReference<>((double) 0);
+        AtomicReference<Double> yTranslate = new AtomicReference<>((double) 0);
         anchorPane.addEventHandler(MouseEvent.MOUSE_PRESSED, mouseEvent -> {
-            double x = mouseEvent.getSceneX();
-            double y = mouseEvent.getSceneY();
-            anchorPane.addEventHandler(MouseEvent.MOUSE_DRAGGED, mouseEvent1 ->
-                    camera.movePosition(new Vector3f((float) (mouseEvent1.getSceneX() - x) / 100,
-                            (float) (mouseEvent1.getSceneY() - y) / 100,
-                            camera.findZ((float) ((mouseEvent1.getSceneX() - x) / 100),
-                                    (float) ((mouseEvent1.getSceneY() - y) / 100)))));
+            if (mouseEvent.isPrimaryButtonDown()) {
+                xRotate.set(mouseEvent.getSceneX());
+                yRotate.set(mouseEvent.getSceneY());
+            }
+            if (mouseEvent.isSecondaryButtonDown()) {
+                xTranslate.set(mouseEvent.getSceneX());
+                yTranslate.set(mouseEvent.getSceneY());
+            }
+
+        });
+        anchorPane.addEventHandler(MouseEvent.MOUSE_DRAGGED, mouseEvent -> {
+            if (mouseEvent.isPrimaryButtonDown()) {
+                camera.movePosition(new Vector3f((float) (mouseEvent.getSceneX() - xRotate.get()),
+                        (float) (mouseEvent.getSceneY() - yRotate.get()),
+                        camera.findZ((float) ((mouseEvent.getSceneX() - xRotate.get())),
+                                (float) ((mouseEvent.getSceneY() - yRotate.get())))));
+                xRotate.set(mouseEvent.getSceneX());
+                yRotate.set(mouseEvent.getSceneY());
+            }
+            if (mouseEvent.isSecondaryButtonDown()) {
+                float[] angles = camera.getAngles().vector;
+                camera.moveTarget(new Vector3f((float) ((mouseEvent.getSceneX() - xTranslate.get()) * (angles[2] + angles[0])),
+                        (float) ((mouseEvent.getSceneY() - yTranslate.get()) * Math.cos(angles[2])),
+                        (float) ((mouseEvent.getSceneY() - yTranslate.get()) * Math.sin(angles[2]))));
+                xTranslate.set(mouseEvent.getSceneX());
+                yTranslate.set(mouseEvent.getSceneY());
+            }
         });
         anchorPane.prefWidthProperty().addListener((ov, oldValue, newValue) -> canvas.setWidth(newValue.doubleValue()));
         anchorPane.prefHeightProperty().addListener((ov, oldValue, newValue) -> canvas.setHeight(newValue.doubleValue()));
@@ -97,11 +124,13 @@ public class GuiController {
                 gc.setStroke(Color.BLACK);
             } else {
                 gc.setStroke(Color.WHITE);
+
             }
+            gc.setFill(Color.GRAY);
 
             for (Mesh mesh : meshes) {
                 if (mesh != null) {
-                    RenderEngine.render(gc, camera, mesh, (int) width, (int) height);
+                    RenderEngine.render(gc, camera, mesh, (int) width, (int) height, drawLines, drawPolygons);
                 }
             }
         });
@@ -138,7 +167,9 @@ public class GuiController {
         Path fileName = Path.of(file.getAbsolutePath());
 
         String fileContent = Files.readString(fileName);
-        meshes.add(ObjReader.read(fileContent));
+        Mesh mesh = ObjReader.read(fileContent);
+        mesh.textureFile = Path.of(fileName.getFileName() + ".jpg");
+        meshes.add(mesh);
     }
 
     @FXML
@@ -390,21 +421,54 @@ public class GuiController {
             });
             checkBoxes.add(checkBox);
         }
-        Button button = new Button("Delete");
-        button.setOnAction(event -> {
+        Button buttonDelete = new Button("Delete");
+        buttonDelete.setOnAction(event -> {
             for (Mesh mesh : selectedMeshes) {
                 meshes.remove(mesh);
             }
             selectedMeshes.clear();
-            button.getScene().getWindow().hide();
+            buttonDelete.getScene().getWindow().hide();
+        });
+
+        Button buttonTriangulate = new Button("Triangulate");
+        buttonTriangulate.setOnAction(event -> {
+            for (Mesh mesh : selectedMeshes) {
+                mesh.triangulate();
+            }
+            buttonTriangulate.getScene().getWindow().hide();
         });
 
         FlowPane root = new FlowPane(Orientation.VERTICAL, 10, 10);
         root.getChildren().addAll(checkBoxes);
-        root.getChildren().add(button);
+        root.getChildren().add(buttonDelete);
+        root.getChildren().add(buttonTriangulate);
         Scene scene = new Scene(root, 250, 500);
         Stage window = new Stage();
         window.setTitle("Model Selection");
+        window.setScene(scene);
+        window.show();
+    }
+
+    @FXML
+    private void modelShowing() {
+        CheckBox checkBoxLines = new CheckBox("Lines");
+        if (drawLines) {
+            checkBoxLines.setSelected(true);
+        }
+        checkBoxLines.setAllowIndeterminate(false);
+        checkBoxLines.setOnAction(event -> drawLines = checkBoxLines.isSelected());
+
+        CheckBox checkBoxPolygons = new CheckBox("Polygons");
+        if (drawPolygons) {
+            checkBoxPolygons.setSelected(true);
+        }
+        checkBoxPolygons.setAllowIndeterminate(false);
+        checkBoxPolygons.setOnAction(event -> drawPolygons = checkBoxPolygons.isSelected());
+
+        FlowPane root = new FlowPane(Orientation.VERTICAL, 10, 10, checkBoxLines, checkBoxPolygons);
+        Scene scene = new Scene(root, 300, 300);
+        Stage window = new Stage();
+        window.setTitle("Showing");
         window.setScene(scene);
         window.show();
     }

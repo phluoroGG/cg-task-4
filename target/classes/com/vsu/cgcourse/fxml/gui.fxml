@@ -91,6 +91,11 @@
                     <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="DIGIT4"/>
                 </accelerator>
             </MenuItem>
+            <MenuItem mnemonicParsing="false" onAction="#modelShowing" text="Showing">
+                <accelerator>
+                    <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="DIGIT5"/>
+                </accelerator>
+            </MenuItem>
         </Menu>
     </MenuBar>
 
